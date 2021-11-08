@@ -1,0 +1,103 @@
+
+#pragma kernel Test
+#pragma kernel Clear
+#pragma kernel Advection
+#pragma kernel Force
+#pragma kernel Diffuse
+#pragma kernel Divergence
+#pragma kernel ProjectField
+#pragma kernel Pressure
+
+// contains x, y, velocity, z concentration
+Texture2D<float4> _SourceFluid;
+RWTexture2D<float4> _DestinationFluid;
+
+float _resolution;
+float _viscosity;
+float _dt;
+
+SamplerState MyLinearRepeatSampler;
+
+float4 SampleLinear(float2 uv)  {
+    return _SourceFluid.SampleLevel(MyLinearRepeatSampler, uv, 0);
+}
+
+[numthreads(8,8,1)]
+void Test (uint3 id : SV_DispatchThreadID)
+{
+
+    float2 pos = ((float2)id.xy + float2(0.5, 0.5)) / _resolution - 0.5;
+
+    float concentration = sin(pos.x * 10) * sin(pos.y * 10) * 0.5 + 0.5;
+
+   _DestinationFluid[id.xy] = float4(-pos, concentration, 0);
+
+}
+
+[numthreads(8,8,1)]
+void Clear (uint3 id : SV_DispatchThreadID)
+{
+    _DestinationFluid[id.xy] = float4(0,0,0,0);
+}
+
+[numthreads(8,8,1)]
+void Advection (uint3 id : SV_DispatchThreadID)
+{
+    float2 velocity = _SourceFluid[id.xy].xy;
+
+    float2 pos = ((float2)id.xy + float2(0.5, 0.5)) / _resolution;
+
+    pos -= velocity * _dt;
+
+    float4 previous = SampleLinear(pos);
+
+    _DestinationFluid[id.xy] = previous;
+}
+
+
+[numthreads(8,8,1)]
+void Force (uint3 id : SV_DispatchThreadID)
+{
+
+
+}
+
+[numthreads(8,8,1)]
+void Diffuse (uint3 id : SV_DispatchThreadID)
+{
+    float4 laplacian = 
+        _SourceFluid[id.xy + uint2(-1,  0)] +
+        _SourceFluid[id.xy + uint2( 1,  0)] +
+        _SourceFluid[id.xy + uint2( 0, -1)] + 
+        _SourceFluid[id.xy + uint2( 0,  1)] -
+        4 * _SourceFluid[id.xy];
+
+    // diffuse velocity, not the concentration
+    float4 result = _SourceFluid[id.xy];
+    result.xy += laplacian.xy * _viscosity;
+
+    _DestinationFluid[id.xy] = result;
+
+}
+
+[numthreads(8,8,1)]
+void Divergence (uint3 id : SV_DispatchThreadID)
+{
+
+
+}
+
+[numthreads(8,8,1)]
+void ProjectField (uint3 id : SV_DispatchThreadID)
+{
+
+
+}
+
+[numthreads(8,8,1)]
+void Pressure (uint3 id : SV_DispatchThreadID)
+{
+
+
+}
+
