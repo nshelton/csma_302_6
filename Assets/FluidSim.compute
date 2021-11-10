@@ -10,11 +10,22 @@
 
 // contains x, y, velocity, z concentration
 Texture2D<float4> _SourceFluid;
+Texture2D<float4> _SourcePressure;
+Texture2D<float4> _SourceDivergence;
+
 RWTexture2D<float4> _DestinationFluid;
+RWTexture2D<float4> _DestinationPressure;
+RWTexture2D<float4> _DestinationDivergence;
 
 float _resolution;
 float _viscosity;
 float _dt;
+
+float _rBeta;
+float _alpha;
+float _halfrdx;
+float _rdx;
+float _dampening;
 
 SamplerState MyLinearRepeatSampler;
 
@@ -25,13 +36,11 @@ float4 SampleLinear(float2 uv)  {
 [numthreads(8,8,1)]
 void Test (uint3 id : SV_DispatchThreadID)
 {
-
-    float2 pos = ((float2)id.xy + float2(0.5, 0.5)) / _resolution - 0.5;
+    float2 pos =  ((float2)id.xy + float2(0.5, 0.5)) / _resolution - 0.5;
 
     float concentration = sin(pos.x * 10) * sin(pos.y * 10) * 0.5 + 0.5;
 
-   _DestinationFluid[id.xy] = float4(-pos, concentration, 0);
-
+   _DestinationFluid[id.xy] = float4(-pos * 0.5, concentration, 0);
 }
 
 [numthreads(8,8,1)]
@@ -54,7 +63,6 @@ void Advection (uint3 id : SV_DispatchThreadID)
     _DestinationFluid[id.xy] = previous;
 }
 
-
 [numthreads(8,8,1)]
 void Force (uint3 id : SV_DispatchThreadID)
 {
@@ -74,30 +82,57 @@ void Diffuse (uint3 id : SV_DispatchThreadID)
 
     // diffuse velocity, not the concentration
     float4 result = _SourceFluid[id.xy];
-    result.xy += laplacian.xy * _viscosity;
+    result.xy += laplacian.xy * _viscosity * _dt;
 
     _DestinationFluid[id.xy] = result;
-
 }
 
 [numthreads(8,8,1)]
 void Divergence (uint3 id : SV_DispatchThreadID)
 {
+    float4 L = _SourceFluid[id.xy + uint2(-1,  0)]; 
+    float4 R = _SourceFluid[id.xy + uint2( 1,  0)];
 
+    float4 D = _SourceFluid[id.xy + uint2( 0, -1)];
+    float4 U = _SourceFluid[id.xy + uint2( 0,  1)];
 
+    float div = ((R.x - L.x) + (U.y - D.y)) * _halfrdx;
+
+    _DestinationDivergence[id.xy] = float4(div, div, div, div);
 }
 
 [numthreads(8,8,1)]
 void ProjectField (uint3 id : SV_DispatchThreadID)
 {
+    float L = _SourcePressure[id.xy + uint2(-1,  0)].x; 
+    float R = _SourcePressure[id.xy + uint2( 1,  0)].x;
 
+    float D = _SourcePressure[id.xy + uint2( 0, -1)].x;
+    float U = _SourcePressure[id.xy + uint2( 0,  1)].x;
 
+    float2 grad = float2(R - L, U - D) * _halfrdx;
+
+    float4 result = _SourceFluid[id.xy];
+    result.xy -= grad;
+
+    _DestinationFluid[id.xy] = result;
 }
 
 [numthreads(8,8,1)]
 void Pressure (uint3 id : SV_DispatchThreadID)
 {
+    // left, right, bottom, and top x samples
+    float4 L = _SourcePressure[id.xy + uint2(-1,  0)]; 
+    float4 R = _SourcePressure[id.xy + uint2( 1,  0)];
 
+    float4 B = _SourcePressure[id.xy + uint2( 0, -1)];
+    float4 T = _SourcePressure[id.xy + uint2( 0,  1)];
 
+    // b sample, from center
+    float4 bC = _SourceDivergence[id.xy];
+
+    // evaluate Jacobi iteration
+    float4 xNew = (L + R + B + T + _alpha * bC) * _rBeta;
+    _DestinationPressure[id.xy] = xNew;
 }
 

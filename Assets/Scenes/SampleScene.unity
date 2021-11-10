@@ -155,8 +155,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _simulationShader: {fileID: 7200000, guid: c0a226362e8cfb844a4a66cb99bf2b72, type: 3}
   _resolution: 1024
-  _viscosity: 0.1
-  _diffuseIterations: 4
+  _viscosity: 0.01
+  _dampening: 0.99
+  _diffuseIterations: 1
+  _pressureIterations: 6
+  _debugMaterial: {fileID: 2100000, guid: 2046a597240bf9546a263f8ab2765871, type: 2}
 --- !u!20 &963194227
 Camera:
   m_ObjectHideFlags: 0
