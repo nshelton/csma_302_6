@@ -12,7 +12,7 @@ The basic sim concepts will be developed in the studio and you will implement th
  
 *Boundary conditions*
 
- - Velocity Condition : before Divergence kernel, set border velocities to be the negative of the inner neighbor (see slide 29)
+ - Velocity Condition : before Advection kernel, set border velocities to be the negative of the inner neighbor (see slide 29)
  - Pressure Condition : before ProjectField kernel, set border pressures to be the same as inner neighbors (see slide 30)
 
 *Code Organization*
