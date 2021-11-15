@@ -4,19 +4,39 @@ WU Fall 2021 | CSMA 302 | Lab #6
 
 We will implement navier-stokes equations for incompressible fluid flow, using compute shaders.
 
+The basic sim concepts will be developed in the studio and you will implement these parts individually :
+
+*Mouse input*
+
+ - take the mouse input pixel position `Input.mousePosition` and add velocity / concentration to the fluid field
+ 
+*Boundary conditions*
+
+ - Velocity Condition : before Divergence kernel, set border velocities to be the negative of the inner neighbor (see slide 29)
+ - Pressure Condition : before ProjectField kernel, set border pressures to be the same as inner neighbors (see slide 30)
+
+*Code Organization*
+
+ - We'll go over how to make helper functions to dispatch the kernels and set up textures, to avoid duplicated code.
+
 ## Due Date
 
-tbd
+Due midnight November 21.
 
 ## Resources
 
-[slides 1](https://docs.google.com/presentation/d/1xJB5mM8XYn44ucQRyh1mzvH4k4dz85qVFZ5OYxjK-JM/edit?usp=sharing)
+[slides](https://docs.google.com/presentation/d/1xJB5mM8XYn44ucQRyh1mzvH4k4dz85qVFZ5OYxjK-JM/edit?usp=sharing)
 
 [GPU Gems]( https://developer.download.nvidia.com/books/HTML/gpugems/gpugems_ch38.html)
 
 ## Grading
 
-tbd
+40 points for working fluid sim
+15 points for mouse input
+15 points for boundary conditions 
+20 points for numerical stability - does the sim not explode for all parameter values?
+10 points for code organizaiton and comments (make helper functions to dispatch kernels)
+
 
 ## Submitting 
 (this is also in the syllabus, but consider this an updated version)
