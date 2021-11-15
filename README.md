@@ -31,11 +31,11 @@ Due midnight November 21.
 
 ## Grading
 
-40 points for working fluid sim
-15 points for mouse input
-15 points for boundary conditions 
-20 points for numerical stability - does the sim not explode for all parameter values?
-10 points for code organizaiton and comments (make helper functions to dispatch kernels)
+ - 40 points for working fluid sim
+ - 15 points for mouse input
+ - 15 points for boundary conditions 
+ - 20 points for numerical stability - does the sim not explode for all parameter values?
+ - 10 points for code organizaiton and comments (make helper functions to dispatch kernels)
 
 
 ## Submitting 
