@@ -76,6 +76,8 @@ public class FluidSimulation : MonoBehaviour
         _pressureB.Release();
     }
 
+    Vector3 _lastMousePos;
+
     void Update() {
         // dx is pixel width
         float dx = 1 ;
@@ -91,10 +93,20 @@ public class FluidSimulation : MonoBehaviour
         _simulationShader.SetFloat("_halfrdx", 0.5f * (1.0f / dx) );
         _simulationShader.SetFloat("_rdx", (1.0f / dx) );
         
-        if ( Time.time < 0.1) {
-            _simulationShader.SetTexture(_kernels["Test"], "_DestinationFluid", _fluidA);
-            _simulationShader.Dispatch(_kernels["Test"], _groupX, _groupY, 1);
-        } 
+        // if ( Time.time < 0.1) {
+        //     _simulationShader.SetTexture(_kernels["Test"], "_DestinationFluid", _fluidA);
+        //     _simulationShader.Dispatch(_kernels["Test"], _groupX, _groupY, 1);
+        // } 
+
+        if (Input.GetMouseButtonDown(0)){
+
+            _simulationShader.SetTexture(_kernels["Force"], "_DestinationFluid", _fluidA);
+            _simulationShader.SetVector("_mousePos", Input.mousePosition);
+            _simulationShader.SetVector("_mouseVelocity", (Input.mousePosition - _lastMousePos) / dt);
+            _simulationShader.Dispatch(_kernels["Force"], _groupX, _groupY, 1);
+
+            _lastMousePos = Input.mousePosition;
+        }
 
         _simulationShader.SetTexture(_kernels["Advection"], "_SourceFluid", _fluidA);
         _simulationShader.SetTexture(_kernels["Advection"], "_DestinationFluid", _fluidB);
