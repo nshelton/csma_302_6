@@ -15,6 +15,8 @@ The basic sim concepts will be developed in the studio and you will implement th
  - Velocity Condition : before Advection kernel, set border velocities to be the negative of the inner neighbor (see slide 29)
  - Pressure Condition : before ProjectField kernel, set border pressures to be the same as inner neighbors (see slide 30)
 
+Add an obstacle into the field  - set velocity field to 0 for some shape inside the field.
+
 *Code Organization*
 
  - We'll go over how to make helper functions to dispatch the kernels and set up textures, to avoid duplicated code.
