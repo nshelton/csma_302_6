@@ -9,6 +9,7 @@ public class FluidSimulation : MonoBehaviour
     [SerializeField] public float _viscosity;
     [SerializeField, Range(1, 20)] public int _diffuseIterations;
     [SerializeField, Range(1, 20)] public int _pressureIterations;
+    [SerializeField, Range(1, 100)] public float _distanceThresh;
 
     [SerializeField] Material _debugMaterial;
 
@@ -35,6 +36,8 @@ public class FluidSimulation : MonoBehaviour
 
     private int _groupX;
     private int _groupY;
+
+    private Vector3 _lastFramePos = Vector3.zero;
 
     void Start()
     {
@@ -82,16 +85,22 @@ public class FluidSimulation : MonoBehaviour
         float dt = Time.deltaTime;
         float v = _viscosity;
 
+        _simulationShader.SetVector("_mousePos", Input.mousePosition);
+        _simulationShader.SetVector("_mouseVel", Input.mousePosition - _lastFramePos);
+        _simulationShader.SetFloat("_distanceThresh", _distanceThresh);
+
         _simulationShader.SetFloat("_resolution", _resolution);
         _simulationShader.SetFloat("_viscosity", _viscosity);
         _simulationShader.SetFloat("_dt", dt);
 
         _simulationShader.SetFloat("_halfrdx", 0.5f * (1.0f / dx) );
         _simulationShader.SetFloat("_rdx", (1.0f / dx) );
-        
-        if ( Time.time < 0.1) {
-            _simulationShader.SetTexture(_kernels["Test"], "_DestinationFluid", _fluidA);
-            _simulationShader.Dispatch(_kernels["Test"], _groupX, _groupY, 1);
+
+        _lastFramePos = Input.mousePosition;
+
+        if (Input.GetMouseButton(0)) {
+            _simulationShader.SetTexture(_kernels["Force"], "_DestinationFluid", _fluidA);
+            _simulationShader.Dispatch(_kernels["Force"], _groupX, _groupY, 1);
         } 
 
         _simulationShader.SetTexture(_kernels["Advection"], "_SourceFluid", _fluidA);

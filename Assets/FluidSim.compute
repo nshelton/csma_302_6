@@ -25,6 +25,10 @@ float _halfrdx;
 float _rdx;
 float _dampening;
 
+float3 _mousePos;
+float3 _mouseVel;
+float _distanceThresh;
+
 SamplerState MyLinearRepeatSampler;
 
 float4 SampleLinear(float2 uv)  {
@@ -57,6 +61,7 @@ void Advection (uint3 id : SV_DispatchThreadID)
     pos -= velocity * _dt;
 
     float4 previous = SampleLinear(pos);
+    previous.z *= 0.99;
 
     _DestinationFluid[id.xy] = previous;
 }
@@ -64,8 +69,9 @@ void Advection (uint3 id : SV_DispatchThreadID)
 [numthreads(8,8,1)]
 void Force (uint3 id : SV_DispatchThreadID)
 {
-
-
+    if (distance(id.xy, (uint2)_mousePos.xy) < _distanceThresh) {
+        _DestinationFluid[id.xy] += float4(_mouseVel.xy, 1, 0);
+    }
 }
 
 [numthreads(8,8,1)]
