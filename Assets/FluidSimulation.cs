@@ -88,8 +88,8 @@ public class FluidSimulation : MonoBehaviour
         _simulationShader.SetFloat("_viscosity", _viscosity);
         _simulationShader.SetFloat("_dt", dt);
 
-        _simulationShader.SetFloat("_alpha", (dx * dx) / (v * dt) );
-        _simulationShader.SetFloat("_rBeta", 1/(4 + (dx * dx)/(v * dt)));
+        // _simulationShader.SetFloat("_alpha", (dx * dx) / (v * dt) );
+        // _simulationShader.SetFloat("_rBeta", 1/(4 + (dx * dx)/(v * dt)));
         _simulationShader.SetFloat("_halfrdx", 0.5f * (1.0f / dx) );
         _simulationShader.SetFloat("_rdx", (1.0f / dx) );
         
@@ -98,11 +98,11 @@ public class FluidSimulation : MonoBehaviour
         //     _simulationShader.Dispatch(_kernels["Test"], _groupX, _groupY, 1);
         // } 
 
-        if (Input.GetMouseButtonDown(0)){
+        if (Input.GetMouseButton(0)){
 
             _simulationShader.SetTexture(_kernels["Force"], "_DestinationFluid", _fluidA);
             _simulationShader.SetVector("_mousePos", Input.mousePosition);
-            _simulationShader.SetVector("_mouseVelocity", (Input.mousePosition - _lastMousePos) / dt);
+            _simulationShader.SetVector("_mouseVelocity", Input.mousePosition - _lastMousePos);
             _simulationShader.Dispatch(_kernels["Force"], _groupX, _groupY, 1);
 
             _lastMousePos = Input.mousePosition;

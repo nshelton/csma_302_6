@@ -21,8 +21,8 @@ float _resolution;
 float _viscosity;
 float _dt;
 
-float _rBeta;
-float _alpha;
+// float _rBeta;
+// float _alpha;
 float _halfrdx;
 float _rdx;
 float _dampening;
@@ -142,7 +142,7 @@ void Pressure (uint3 id : SV_DispatchThreadID)
     float4 bC = _SourceDivergence[id.xy];
 
     // evaluate Jacobi iteration
-    float4 xNew = (L + R + B + T + _alpha * bC) * _rBeta;
+    float4 xNew = (L + R + B + T - bC) * 0.25;
     _DestinationPressure[id.xy] = xNew;
 }
 
