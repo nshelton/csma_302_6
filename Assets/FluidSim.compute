@@ -1,4 +1,3 @@
-
 #pragma kernel Test
 #pragma kernel Clear
 #pragma kernel Advection
@@ -7,6 +6,8 @@
 #pragma kernel Divergence
 #pragma kernel ProjectField
 #pragma kernel Pressure
+#pragma kernel BoundaryPressure
+#pragma kernel BoundaryVelocity
 
 // contains x, y, velocity, z concentration
 Texture2D<float4> _SourceFluid;
@@ -27,10 +28,15 @@ float _halfrdx;
 float _rdx;
 float _dampening;
 
+//in pixel coordinates
+float3 _mousePos;
+float3 _mouseVelocity;
+float _decay;
+
 SamplerState MyLinearRepeatSampler;
 
 float4 SampleLinear(float2 uv)  {
-    return _SourceFluid.SampleLevel(MyLinearRepeatSampler, uv, 0);
+    return _SourceFluid.SampleLevel(MyLinearRepeatSampler, saturate(uv), 0);
 }
 
 [numthreads(8,8,1)]
@@ -38,15 +44,21 @@ void Test (uint3 id : SV_DispatchThreadID)
 {
     float2 pos =  ((float2)id.xy + float2(0.5, 0.5)) / _resolution - 0.5;
 
-    float concentration = sin(pos.x * 10) * sin(pos.y * 10) * 0.5 + 0.5;
+    float concentration = 0;
+    float2 velocity = float2(0, 0);
 
-   _DestinationFluid[id.xy] = float4(-pos * 0.5, concentration, 0);
+    if (length(pos) < 0.1) {
+        concentration = 1;
+        velocity = float2(0, 0.1);
+    }
+
+   _DestinationFluid[id.xy] += float4(velocity, concentration, 0);
 }
 
 [numthreads(8,8,1)]
 void Clear (uint3 id : SV_DispatchThreadID)
 {
-    _DestinationFluid[id.xy] = float4(0,0,0,0);
+    _DestinationFluid[id.xy] = float4(0, 0, 0, 0);
 }
 
 [numthreads(8,8,1)]
@@ -60,14 +72,21 @@ void Advection (uint3 id : SV_DispatchThreadID)
 
     float4 previous = SampleLinear(pos);
 
+    previous.z *= _decay;
     _DestinationFluid[id.xy] = previous;
 }
 
 [numthreads(8,8,1)]
 void Force (uint3 id : SV_DispatchThreadID)
 {
+    float4 result = float4(0, 0, 0, 0);
 
+    if (distance(id.xy, _mousePos.xy) < 10) {
+        result.xy = _mouseVelocity.xy;
+        result.z = 1;
+    }
 
+    _DestinationFluid[id.xy] += result;
 }
 
 [numthreads(8,8,1)]
@@ -132,7 +151,58 @@ void Pressure (uint3 id : SV_DispatchThreadID)
     float4 bC = _SourceDivergence[id.xy];
 
     // evaluate Jacobi iteration
-    float4 xNew = (L + R + B + T + _alpha * bC) * _rBeta;
+    float4 xNew = (L + R + B + T + _alpha * bC) * 0.25;
+
     _DestinationPressure[id.xy] = xNew;
+}
+
+[numthreads(8, 8, 1)]
+void BoundaryPressure (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x == 0) {
+        float4 result = _SourceFluid[id.xy + uint2(1, 0)];
+    }
+
+    if (id.x == _resolution - 1) {
+        float4 result = _SourceFluid[id.xy - uint2(1, 0)];
+    }
+
+    if (id.y == 0) {
+        float4 result = _SourceFluid[id.xy + uint2(0, 1)];
+    }
+
+    if (id.y == _resolution - 1) {
+        float4 result = _SourceFluid[id.xy - uint2(0, 1)];
+    }
+}
+
+[numthreads(8, 8, 1)]
+void BoundaryVelocity (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x == 0) {
+        float4 result = _SourceFluid[id.xy + uint2(1, 0)];
+        _DestinationFluid[id.xy] = result * float4(-1, -1, 1, 1);
+    }
+
+    if (id.x == _resolution - 1) {
+        float4 result = _SourceFluid[id.xy - uint2(1, 0)];
+        _DestinationFluid[id.xy] = result * float4(-1, -1, 1, 1);
+    }
+
+    if (id.y == 0) {
+        float4 result = _SourceFluid[id.xy + uint2(0, 1)];
+        _DestinationFluid[id.xy] = result * float4(-1, -1, 1, 1);
+    }
+
+    if (id.y == _resolution - 1) {
+        float4 result = _SourceFluid[id.xy - uint2(0, 1)];
+        _DestinationFluid[id.xy] = result * float4(-1, -1, 1, 1);
+    }
+
+    float2 pos = ((float2)id.xy + float2(0.5, 0.5)) / _resolution - 0.5;
+
+    //if (length(frac(pos * 4) - 0.5) < 0.1) {
+    //    _DestinationFluid[id.xy] = float4(0, 0, 0, 0);
+    //}
 }
 

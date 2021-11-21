@@ -9,6 +9,8 @@ public class FluidSimulation : MonoBehaviour
     [SerializeField] public float _viscosity;
     [SerializeField, Range(1, 20)] public int _diffuseIterations;
     [SerializeField, Range(1, 20)] public int _pressureIterations;
+    [SerializeField, Range(0, 1)] public float _decay;
+    [SerializeField, Range(0, 50)] public float _velocityScale;
 
     [SerializeField] Material _debugMaterial;
 
@@ -30,33 +32,29 @@ public class FluidSimulation : MonoBehaviour
         "Diffuse",
         "Divergence",
         "ProjectField",
-        "Pressure"
+        "Pressure",
+        "BoundaryPressure",
+        "BoundaryVelocity"
     };
 
     private int _groupX;
     private int _groupY;
 
+    RenderTexture CreateTexture(int resolution){
+        var texture = new RenderTexture(resolution, resolution, 0, RenderTextureFormat.ARGBFloat);
+        texture.enableRandomWrite = true;
+        texture.Create();
+
+        return texture;
+    }
+
     void Start()
     {
-        _fluidA = new RenderTexture(_resolution, _resolution, 0, RenderTextureFormat.ARGBFloat);
-        _fluidA.enableRandomWrite = true;
-        _fluidA.Create();
-
-        _fluidB = new RenderTexture(_resolution, _resolution, 0, RenderTextureFormat.ARGBFloat);
-        _fluidB.enableRandomWrite = true;
-        _fluidB.Create();
-
-        _divergence = new RenderTexture(_resolution, _resolution, 0, RenderTextureFormat.ARGBFloat);
-        _divergence.enableRandomWrite = true;
-        _divergence.Create();
-
-        _pressureA = new RenderTexture(_resolution, _resolution, 0, RenderTextureFormat.ARGBFloat);
-        _pressureA.enableRandomWrite = true;
-        _pressureA.Create();
-
-        _pressureB = new RenderTexture(_resolution, _resolution, 0, RenderTextureFormat.ARGBFloat);
-        _pressureB.enableRandomWrite = true;
-        _pressureB.Create();
+        _fluidA = CreateTexture(_resolution);
+        _fluidB = CreateTexture(_resolution);
+        _divergence = CreateTexture(_resolution);
+        _pressureA = CreateTexture(_resolution);
+        _pressureB = CreateTexture(_resolution);
 
         foreach(string name in _kernelNames) {
             _kernels[name] = _simulationShader.FindKernel(name);
@@ -64,7 +62,6 @@ public class FluidSimulation : MonoBehaviour
 
         _groupX = Mathf.CeilToInt(_resolution / 8);
         _groupY = Mathf.CeilToInt(_resolution / 8);
-
     }
 
     void Destroy()
@@ -76,6 +73,49 @@ public class FluidSimulation : MonoBehaviour
         _pressureB.Release();
     }
 
+    Vector3 _lastMousePos;
+
+    void DispatchKernel(string name, 
+        RenderTexture sourceFluid = null, 
+        RenderTexture destinationFluid = null,
+        RenderTexture sourceDivergence = null,
+        RenderTexture destinationDivergence = null, 
+        RenderTexture sourcePressure = null, 
+        RenderTexture destinationPressure = null) {
+
+        if (sourceFluid != null)
+        {
+            _simulationShader.SetTexture(_kernels[name], "_SourceFluid", sourceFluid);
+        }
+
+        if (destinationFluid != null)
+        {
+            _simulationShader.SetTexture(_kernels[name], "_DestinationFluid", destinationFluid);
+        }
+
+        if (sourceDivergence != null)
+        {
+            _simulationShader.SetTexture(_kernels[name], "_SourceDivergence", sourceDivergence);
+        }
+
+        if (destinationDivergence != null)
+        {
+            _simulationShader.SetTexture(_kernels[name], "_DestinationDivergence", destinationDivergence);
+        }
+
+        if (sourcePressure != null)
+        {
+            _simulationShader.SetTexture(_kernels[name], "_SourcePressure", sourcePressure);
+        }
+        
+        if (destinationPressure != null)
+        {
+            _simulationShader.SetTexture(_kernels[name], "_DestinationPressure", destinationPressure);
+        }
+
+        _simulationShader.Dispatch(_kernels[name], _groupX, _groupY, 1);
+    }
+
     void Update() {
         // dx is pixel width
         float dx = 1 ;
@@ -85,54 +125,38 @@ public class FluidSimulation : MonoBehaviour
         _simulationShader.SetFloat("_resolution", _resolution);
         _simulationShader.SetFloat("_viscosity", _viscosity);
         _simulationShader.SetFloat("_dt", dt);
+        _simulationShader.SetFloat("_decay", _decay);
 
-        _simulationShader.SetFloat("_alpha", (dx * dx) / (v * dt) );
-        _simulationShader.SetFloat("_rBeta", 1/(4 + (dx * dx)/(v * dt)));
-        _simulationShader.SetFloat("_halfrdx", 0.5f * (1.0f / dx) );
+        _simulationShader.SetFloat("_halfrdx", 0.5f * (1.0f / dx));
         _simulationShader.SetFloat("_rdx", (1.0f / dx) );
         
-        if ( Time.time < 0.1) {
-            _simulationShader.SetTexture(_kernels["Test"], "_DestinationFluid", _fluidA);
-            _simulationShader.Dispatch(_kernels["Test"], _groupX, _groupY, 1);
-        } 
+        if (Input.GetMouseButton(0)) {
+            _simulationShader.SetVector("_mousePos", Input.mousePosition);
+            _simulationShader.SetVector("_mouseVelocity", _velocityScale * (Input.mousePosition - _lastMousePos));
 
-        _simulationShader.SetTexture(_kernels["Advection"], "_SourceFluid", _fluidA);
-        _simulationShader.SetTexture(_kernels["Advection"], "_DestinationFluid", _fluidB);
-        _simulationShader.Dispatch(_kernels["Advection"], _groupX, _groupY, 1);
+            DispatchKernel("Force", destinationFluid: _fluidA);
+        }
+
+        _lastMousePos = Vector3.Lerp(_lastMousePos, Input.mousePosition, 0.5f);
+
+        DispatchKernel("BoundaryVelocity", sourceFluid: _fluidA, destinationFluid: _fluidA);
+        DispatchKernel("Advection", sourceFluid: _fluidA, destinationFluid: _fluidB);
 
         for(int i = 0; i < _diffuseIterations; i ++) {
-            _simulationShader.SetTexture(_kernels["Diffuse"], "_SourceFluid", _fluidB);
-            _simulationShader.SetTexture(_kernels["Diffuse"], "_DestinationFluid", _fluidA);
-            _simulationShader.Dispatch(_kernels["Diffuse"], _groupX, _groupY, 1);
-            
-            _simulationShader.SetTexture(_kernels["Diffuse"], "_SourceFluid", _fluidA);
-            _simulationShader.SetTexture(_kernels["Diffuse"], "_DestinationFluid", _fluidB);
-            _simulationShader.Dispatch(_kernels["Diffuse"], _groupX, _groupY, 1);
+            DispatchKernel("Diffuse", sourceFluid: _fluidB, destinationFluid: _fluidA);
+            DispatchKernel("Diffuse", sourceFluid: _fluidA, destinationFluid: _fluidB);
         }
 
-        _simulationShader.SetTexture(_kernels["Divergence"], "_SourceFluid", _fluidB);
-        _simulationShader.SetTexture(_kernels["Divergence"], "_DestinationDivergence", _divergence);
-        _simulationShader.Dispatch(_kernels["Divergence"], _groupX, _groupY, 1);
-
-        _simulationShader.SetTexture(_kernels["Clear"], "_DestinationFluid", _pressureA);
-        _simulationShader.Dispatch(_kernels["Clear"], _groupX, _groupY, 1);
+        DispatchKernel("Divergence", sourceFluid: _fluidB, destinationDivergence: _divergence);
+        DispatchKernel("Clear", destinationFluid: _pressureA);
 
         for(int i = 0; i < _pressureIterations; i ++) {
-            _simulationShader.SetTexture(_kernels["Pressure"], "_SourcePressure", _pressureA);
-            _simulationShader.SetTexture(_kernels["Pressure"], "_SourceDivergence", _divergence);
-            _simulationShader.SetTexture(_kernels["Pressure"], "_DestinationPressure", _pressureB);
-            _simulationShader.Dispatch(_kernels["Pressure"], _groupX, _groupY, 1);
-            
-            _simulationShader.SetTexture(_kernels["Pressure"], "_SourcePressure", _pressureB);
-            _simulationShader.SetTexture(_kernels["Pressure"], "_SourceDivergence", _divergence);
-            _simulationShader.SetTexture(_kernels["Pressure"], "_DestinationPressure", _pressureA);
-            _simulationShader.Dispatch(_kernels["Pressure"], _groupX, _groupY, 1);
+            DispatchKernel("Pressure", sourceDivergence: _divergence, sourcePressure: _pressureA, destinationPressure: _pressureB);
+            DispatchKernel("Pressure", sourceDivergence: _divergence, sourcePressure: _pressureB, destinationPressure: _pressureA);
         }
 
-        _simulationShader.SetTexture(_kernels["ProjectField"], "_SourceFluid", _fluidB);
-        _simulationShader.SetTexture(_kernels["ProjectField"], "_DestinationFluid", _fluidA);
-        _simulationShader.SetTexture(_kernels["ProjectField"], "_SourcePressure", _pressureA);
-        _simulationShader.Dispatch(_kernels["ProjectField"], _groupX, _groupY, 1);
+        DispatchKernel("BoundaryPressure", sourcePressure: _pressureA, destinationPressure: _pressureA);
+        DispatchKernel("ProjectField", sourceFluid: _fluidB, destinationFluid: _fluidA, sourcePressure: _pressureA);
     }
 
     void OnRenderImage(RenderTexture source, RenderTexture destination) 
