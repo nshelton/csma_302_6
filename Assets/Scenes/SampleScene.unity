@@ -156,9 +156,11 @@ MonoBehaviour:
   _simulationShader: {fileID: 7200000, guid: c0a226362e8cfb844a4a66cb99bf2b72, type: 3}
   _resolution: 1024
   _viscosity: 0.01
-  _diffuseIterations: 1
-  _pressureIterations: 6
-  _distanceThresh: 29.3
+  _diffuseIterations: 8
+  _pressureIterations: 20
+  _distanceThreshold: 9
+  _decay: 0.97
+  _velocityScale: 5.8
   _debugMaterial: {fileID: 2100000, guid: 2046a597240bf9546a263f8ab2765871, type: 2}
 --- !u!20 &963194227
 Camera:

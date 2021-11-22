@@ -7,6 +7,8 @@
 #pragma kernel Divergence
 #pragma kernel ProjectField
 #pragma kernel Pressure
+#pragma kernel BoundaryPressure
+#pragma kernel BoundaryVelocity
 
 // contains x, y, velocity, z concentration
 Texture2D<float4> _SourceFluid;
@@ -27,12 +29,13 @@ float _dampening;
 
 float3 _mousePos;
 float3 _mouseVel;
+float _decay;
 float _distanceThresh;
 
 SamplerState MyLinearRepeatSampler;
 
 float4 SampleLinear(float2 uv)  {
-    return _SourceFluid.SampleLevel(MyLinearRepeatSampler, uv, 0);
+    return _SourceFluid.SampleLevel(MyLinearRepeatSampler, saturate(uv), 0);
 }
 
 [numthreads(8,8,1)]
@@ -41,8 +44,7 @@ void Test (uint3 id : SV_DispatchThreadID)
     float2 pos =  ((float2)id.xy + float2(0.5, 0.5)) / _resolution - 0.5;
 
     float concentration = sin(pos.x * 10) * sin(pos.y * 10) * 0.5 + 0.5;
-
-   _DestinationFluid[id.xy] = float4(-pos * 0.5, concentration, 0);
+    _DestinationFluid[id.xy] = float4(-pos * 0.5, concentration, 0);
 }
 
 [numthreads(8,8,1)]
@@ -61,8 +63,8 @@ void Advection (uint3 id : SV_DispatchThreadID)
     pos -= velocity * _dt;
 
     float4 previous = SampleLinear(pos);
-    previous.z *= 0.99;
 
+    previous.z *= _decay;
     _DestinationFluid[id.xy] = previous;
 }
 
@@ -140,3 +142,42 @@ void Pressure (uint3 id : SV_DispatchThreadID)
     _DestinationPressure[id.xy] = xNew;
 }
 
+[numthreads(8,8,1)]
+void BoundaryPressure (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x == 0)
+        _DestinationPressure[id.xy] = _SourcePressure[id.xy + uint2(1, 0)];
+
+    if (id.y == 0)
+        _DestinationPressure[id.xy] = _SourcePressure[id.xy + uint2(0, 1)];
+
+    if (id.x == _resolution - 1)
+        _DestinationPressure[id.xy] = _SourcePressure[id.xy - uint2(1, 0)];
+    
+    if (id.y == _resolution - 1)
+        _DestinationPressure[id.xy] = _SourcePressure[id.xy - uint2(0, 1)];
+}
+
+
+[numthreads(8,8,1)]
+void BoundaryVelocity (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x == 0)
+        _DestinationFluid[id.xy] = _SourceFluid[id.xy + uint2(1, 0)] * float4(-1, -1, 1, 1);
+
+    if (id.y == 0)
+        _DestinationFluid[id.xy] = _SourceFluid[id.xy + uint2(0, 1)] * float4(-1, -1, 1, 1);
+
+    if (id.x == _resolution - 1)
+        _DestinationFluid[id.xy] = _SourceFluid[id.xy - uint2(1, 0)] * float4(-1, -1, 1, 1);
+
+    if (id.y == _resolution - 1)
+        _DestinationFluid[id.xy] = _SourceFluid[id.xy - uint2(0, 1)] * float4(-1, -1, 1, 1);
+
+    float2 pos = ((float2)id.xy) / _resolution - 0.45f;
+
+    // cube
+    if (length(pow(pos, 15)) < pow(10, -13)) {
+        _DestinationFluid[id.xy] = float4(0, 0, 0, 0); // clear
+    }
+}
