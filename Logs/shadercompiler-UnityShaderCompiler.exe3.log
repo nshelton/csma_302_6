@@ -1,1 +1,11 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.3.16f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.3.16f1/Editor/Data/PlaybackEngines'
+Cmd: initializeCompiler
+
+Cmd: compileComputeKernel
+  insize=5365 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_6/Assets/FluidSim.compute kernel=Divergence cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at FluidSim.compute(46): comma expression used where a vector constructor may have been intended
+  error: 1 plat 4 at FluidSim.compute(165): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(171): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(184): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(192): signed/unsigned mismatch, unsigned assumed
+ ok=1 outsize=981
+
