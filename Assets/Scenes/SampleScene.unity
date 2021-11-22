@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311918, g: 0.3807398, b: 0.35872716, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -154,11 +154,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _simulationShader: {fileID: 7200000, guid: c0a226362e8cfb844a4a66cb99bf2b72, type: 3}
-  _resolution: 1024
+  _resolution: 256
   _viscosity: 0.01
-  _dampening: 0.99
-  _diffuseIterations: 1
-  _pressureIterations: 6
+  _diffuseIterations: 7
+  _pressureIterations: 7
+  _decay: 1
+  _velocityScale: 1
   _debugMaterial: {fileID: 2100000, guid: 2046a597240bf9546a263f8ab2765871, type: 2}
 --- !u!20 &963194227
 Camera:

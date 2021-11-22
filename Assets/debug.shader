@@ -69,7 +69,7 @@ Shader "Hidden/debug"
                 //pressure (red, blue)
                 if ( i.uv.x > 0.5 && i.uv.y > 0.5) {
                     col.r = _pressureScale * tex2D(_pressure, frac(i.uv * 2));
-                    col.b = - _pressureScale * tex2D(_pressure, frac(i.uv * 2));
+                    col.b = -_pressureScale * tex2D(_pressure, frac(i.uv * 2));
                 }
 
                 //concentration (black, white)

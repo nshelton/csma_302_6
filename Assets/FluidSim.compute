@@ -151,7 +151,7 @@ void Pressure (uint3 id : SV_DispatchThreadID)
     float4 bC = _SourceDivergence[id.xy];
 
     // evaluate Jacobi iteration
-    float4 xNew = (L + R + B + T + _alpha * bC) * 0.25;
+    float4 xNew = (L + R + B + T - bC) * 0.25;
 
     _DestinationPressure[id.xy] = xNew;
 }

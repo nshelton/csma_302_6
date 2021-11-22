@@ -8,7 +8,7 @@ public class FluidSimulation : MonoBehaviour
     [SerializeField] public int _resolution = 1024;
     [SerializeField] public float _viscosity;
     [SerializeField, Range(1, 20)] public int _diffuseIterations;
-    [SerializeField, Range(1, 20)] public int _pressureIterations;
+    [SerializeField, Range(1, 80)] public int _pressureIterations;
     [SerializeField, Range(0, 1)] public float _decay;
     [SerializeField, Range(0, 50)] public float _velocityScale;
 
