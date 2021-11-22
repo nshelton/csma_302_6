@@ -1,1 +1,30 @@
 Base path: 'D:/Unity/2020.3.21f1/Editor/Data', plugins path 'D:/Unity/2020.3.21f1/Editor/Data/PlaybackEngines'
+Cmd: initializeCompiler
+
+Cmd: compileComputeKernel
+  insize=4054 file=D:/Unity/csma_302_6/Assets/FluidSim.compute kernel=Pressure cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0 ok=1 outsize=1049
+
+Cmd: compileComputeKernel
+  insize=4051 file=D:/Unity/csma_302_6/Assets/FluidSim.compute kernel=Diffuse cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0 ok=1 outsize=1170
+
+Cmd: compileComputeKernel
+  insize=5124 file=D:/Unity/csma_302_6/Assets/FluidSim.compute kernel=Diffuse cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at FluidSim.compute(158): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(164): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(176): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(184): signed/unsigned mismatch, unsigned assumed
+ ok=1 outsize=1170
+
+Cmd: compileComputeKernel
+  insize=5287 file=D:/Unity/csma_302_6/Assets/FluidSim.compute kernel=Clear cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at FluidSim.compute(158): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(164): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(176): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(184): signed/unsigned mismatch, unsigned assumed
+ ok=1 outsize=319
+
+Cmd: compileComputeKernel
+  insize=5342 file=D:/Unity/csma_302_6/Assets/FluidSim.compute kernel=Test cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at FluidSim.compute(158): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(164): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(176): signed/unsigned mismatch, unsigned assumed
+  error: 1 plat 4 at FluidSim.compute(184): signed/unsigned mismatch, unsigned assumed
+ ok=1 outsize=693
+
