@@ -3,7 +3,10 @@ Shader "Hidden/debug"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _scale("scale", float) = 1
+        _velocityScale("velocity scale", float) = 1
+        _divergenceScale("divergence scale", float) = 1
+        _pressureScale("pressure scale", float) = 1
+        _concentrationScale("concentration scale", float) = 1
     }
     SubShader
     {
@@ -38,7 +41,11 @@ Shader "Hidden/debug"
                 return o;
             }
 
-            float _scale;
+            float _velocityScale;
+            float _divergenceScale;
+            float _pressureScale;
+            float _concentrationScale;
+
             sampler2D _MainTex;
 
             sampler2D _divergence;
@@ -49,17 +56,22 @@ Shader "Hidden/debug"
             {
                 float4 col =  (float4) 0;
 
+                // velocity
                 if ( i.uv.x < 0.5 && i.uv.y < 0.5) {
-                    col = tex2D(_fluid, i.uv * 2);
+                    col.xy = _velocityScale * abs(tex2D(_fluid, i.uv * 2).xy);
                 }
                 if ( i.uv.x > 0.5 && i.uv.y < 0.5) {
-                    col = tex2D(_divergence, frac(i.uv * 2));
+                    col = _divergenceScale * tex2D(_divergence, frac(i.uv * 2));
                 }
                 if ( i.uv.x > 0.5 && i.uv.y > 0.5) {
-                    col = tex2D(_pressure, frac(i.uv * 2));
+                    col.r = _pressureScale * tex2D(_pressure, frac(i.uv * 2));
+                    col.b = -_pressureScale * tex2D(_pressure, frac(i.uv * 2));
+                }
+                if ( i.uv.x < 0.5 && i.uv.y > 0.5) {
+                    col = _concentrationScale * (float4)tex2D(_fluid, frac(i.uv * 2)).z;
                 }
 
-                col.rgb = _scale * col;
+                col.rgb = col;
                 return col;
             }
             ENDCG
