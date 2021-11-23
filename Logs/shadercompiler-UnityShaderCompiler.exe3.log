@@ -157,3 +157,6 @@ Cmd: compileComputeKernel
   error: 1 plat 4 at FluidSim.compute(201): signed/unsigned mismatch, unsigned assumed
  ok=1 outsize=1680
 
+Cmd: shutdown
+
+Quitting shader compiler process
