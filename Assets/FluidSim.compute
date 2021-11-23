@@ -161,18 +161,22 @@ void BoundaryPressure (uint3 id : SV_DispatchThreadID)
 {
     if (id.x == 0) {
         float4 result = _SourceFluid[id.xy + uint2(1, 0)];
+        _DestinationFluid[id.xy] = result;
     }
 
     if (id.x == _resolution - 1) {
         float4 result = _SourceFluid[id.xy - uint2(1, 0)];
+        _DestinationFluid[id.xy] = result;
     }
 
     if (id.y == 0) {
         float4 result = _SourceFluid[id.xy + uint2(0, 1)];
+        _DestinationFluid[id.xy] = result;
     }
 
     if (id.y == _resolution - 1) {
         float4 result = _SourceFluid[id.xy - uint2(0, 1)];
+        _DestinationFluid[id.xy] = result;
     }
 }
 
@@ -199,10 +203,10 @@ void BoundaryVelocity (uint3 id : SV_DispatchThreadID)
         _DestinationFluid[id.xy] = result * float4(-1, -1, 1, 1);
     }
 
-    float2 pos = ((float2)id.xy + float2(0.5, 0.5)) / _resolution - 0.5;
+    float2 pos = ((float2)id.xy) / _resolution - 0.5;
 
-    //if (length(frac(pos * 4) - 0.5) < 0.1) {
-    //    _DestinationFluid[id.xy] = float4(0, 0, 0, 0);
-    //}
+    if (distance(frac(pos * 2), 0.5) < 0.1) {
+        _DestinationFluid[id.xy] = float4(0, 0, 0, 0);
+    }
 }
 
